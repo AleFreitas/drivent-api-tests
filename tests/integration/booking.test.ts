@@ -182,6 +182,9 @@ describe('POST /booking', () => {
 
       const response = await server.post('/booking').set('Authorization', `Bearer ${token}`).send(body);
       expect(response.statusCode).toEqual(httpStatus.OK);
+      expect(response.body).toEqual({
+        bookingId: expect.any(Number),
+      });
     });
   });
 });
