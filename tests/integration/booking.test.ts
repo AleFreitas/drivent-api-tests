@@ -141,8 +141,15 @@ describe('POST /booking', () => {
       const payment = await createPayment(ticket.id, ticketType.price);
 
       const createdHotel = await createHotel();
-      const createdRoom = await createRoomFull(createdHotel.id);
+      const createdRoom = await createRoomWithHotelId(createdHotel.id);
       const body = { roomId: createdRoom.id };
+
+      const user2 = await createUser();
+      const user3 = await createUser();
+      const user4 = await createUser();
+      const booking2 = await createBooking(user2.id, createdRoom.id);
+      const booking3 = await createBooking(user3.id, createdRoom.id);
+      const booking4 = await createBooking(user4.id, createdRoom.id);
 
       const response = await server.post('/booking').set('Authorization', `Bearer ${token}`).send(body);
       expect(response.statusCode).toEqual(httpStatus.FORBIDDEN);

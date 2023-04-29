@@ -3,6 +3,14 @@ import bookingRepository from '@/repositories/booking-repository';
 import enrollmentRepository from '@/repositories/enrollment-repository';
 import ticketsRepository from '@/repositories/tickets-repository';
 
+async function roomCapacityCheck(roomId: number) {
+  const room = await bookingRepository.findRoomById(roomId);
+  if (!room) throw notFoundError();
+  if (room.capacity === 0) throw forbiddenOperationError();
+  const roomBookings = await bookingRepository.findRoomBookings(roomId);
+  if (roomBookings.length >= room.capacity) throw forbiddenOperationError();
+}
+
 async function listBooking(userId: number) {
   const bookings = await bookingRepository.findUserBookings(userId);
   if (!bookings) throw notFoundError();
@@ -21,11 +29,8 @@ async function createBooking(userId: number, roomId: number) {
   if (!ticket || ticket.status === 'RESERVED' || ticket.TicketType.isRemote || !ticket.TicketType.includesHotel) {
     throw forbiddenOperationError();
   }
-  const room = await bookingRepository.findRoomById(roomId);
-  if (!room) throw notFoundError();
-  if (room.capacity === 0) throw forbiddenOperationError();
+  await roomCapacityCheck(roomId);
   const booking = await bookingRepository.insertBooking(userId, roomId);
-  const roomUpdate = await bookingRepository.updateRoomCapacity(roomId, room.capacity - 1);
   return {
     bookingId: booking.id,
   };
